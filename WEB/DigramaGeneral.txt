@@ -1,0 +1,71 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
+
+namespace FacturaElectronica.DAO
+{
+    public class ConexionBD
+    {
+        MySqlConnection conexion;
+        private string datosConexion = "server=50.62.209.118;user id=kamira;password=Camila2009*;persistsecurityinfo=True;database=kamiraFactura";
+        MySqlCommand comando;
+
+        public ConexionBD()
+        {
+            try
+            {
+                conexion = new MySqlConnection(datosConexion);
+                conexion.Open();
+                Console.WriteLine("CONEXION EXITOSA AL SERVIDOR");
+                conexion.Close();
+                
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+        
+
+        public MySqlConnection getSqlConnection()
+        {
+            return conexion;
+        }
+
+        public void setComando(string StoreProcedure)
+        {
+            comando = new MySqlCommand(StoreProcedure, conexion);
+            comando.CommandType = System.Data.CommandType.StoredProcedure;
+        }
+        public MySqlCommand getComando()
+        {
+            return comando;
+        }
+        public void Close()
+        {
+            conexion.Close();
+            comando = null;
+        }
+        public void Open()
+        {
+            try
+            {
+                conexion.Open();
+            }
+            catch
+            {
+                conexion.Close();
+                conexion.Open();
+            }
+        }
+
+
+
+
+    }
+}
+
+
