@@ -16,7 +16,7 @@ namespace RegistroNotas
 
         protected void ButtonAceptar_Click(object sender, EventArgs e)
         {
-
+            Server.Transfer("~/CrearEvaluacionFija.aspx");
         }
     }
 }

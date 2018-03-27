@@ -53,7 +53,7 @@
             </tr>
         </table>
         <p>
-            <asp:Button ID="ButtonAceptar" runat="server" Text="Aceptar" />
+            <asp:Button ID="ButtonAceptar" runat="server" Text="Aceptar" OnClick="ButtonAceptar_Click" />
         </p>
     </form>
 
