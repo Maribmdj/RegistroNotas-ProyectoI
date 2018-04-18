@@ -8,17 +8,26 @@ FROM    OPENROWSET(
         ) AS Data
 
 
---INSERT INTO PeriodoLectivo (id, fechaInicio, fechaFin, Nombre) 
+--INSERT INTO Rubro(id, Nombre) 
 --Select Rubro
 SELECT  itemData.value('@ID','INT') AS id,
         itemData.value('@name', 'varchar(50)') AS Nombre
 FROM    @doc.nodes('/XML/itemData/item') AS x1(itemData)
 
---INSERT INTO PeriodoLectivo (id, fechaInicio, fechaFin, Nombre) 
---Select Estudiantes
+--INSERT INTO Profesor(id, Nombre, Email, clave) 
+--Profesor
+SELECT  teacherData.value('@ID','INT') AS id,
+        teacherData.value('@name', 'varchar(20)') AS Nombre,
+		--teacherData.value('@lastName', 'varchar(20)') AS Apellidos,
+		teacherData.value('@email', 'varchar(20)') AS Email,
+		teacherData.value('@password', 'varchar(15)') AS clave
+FROM    @doc.nodes('/XML/teacherData/teacher') AS x1(teacherData)
+
+
+--INSERT INTO Estudiante(carne, Nombre, Apellidos, Email, Telefono) 
 SELECT  studentData.value('@carnet','INT') AS Carne,
         studentData.value('@name', 'varchar(20)') AS Nombre,
-		studentData.value('@lastname', 'varchar(20)') AS Apellidos,
+		studentData.value('@lastName', 'varchar(20)') AS Apellidos,
 		studentData.value('@email', 'varchar(20)') AS Email,
 		studentData.value('@phone', 'varchar(15)') AS Telefono
 FROM    @doc.nodes('/XML/studentData/student') AS x1(studentData)
@@ -38,21 +47,20 @@ FROM    @doc.nodes('/XML/termData/term') AS x1(termData)
 WHERE termData.value('@ID','INT')=@contadorp
 
 
---Select Grupo
+--Grupo
 --INSERT INTO Grupo(id, codigoCurso, nombreCurso, estado, idPeriodoLectivo)  
 SELECT	groupData.value('@ID','INT') AS id,
         groupData.value('@code', 'varchar(15)') AS codigoCurso,
 		groupData.value('@courseName', 'varchar(50)') AS nombreCurso,
 		groupData.value('@groupStateID', 'char(1)') AS estado,
 		groupData.value('@termID', 'int') AS idPeriodoLectivo
-
 FROM  @doc.nodes('/XML/groupData/group') AS x1(groupData)
 WHERE groupData.value('@termID', 'int')=@contadorp
 
 
 
 --Select RubroXGrupo
---INSERT INTO Grupo(id, codigoCurso, nombreCurso, estado, idPeriodoLectivo)  
+--INSERT INTO RubroXGrupo(id, Porcentae, TipoEvaluacion, QEvaluaciones, idRubro, idGrupo)  
 SELECT	groupItemData.value('@ID','INT') AS id,
         groupItemData.value('@percentage', 'varchar(15)') AS Porcentaje,
 		groupItemData.value('@constantCount', 'varchar(50)') AS TipoEvaluacion,
@@ -64,8 +72,21 @@ FROM  @doc.nodes('/XML/groupItemData/groupItem') AS x1(groupItemData)
 WHERE groupItemData.value('@groupID', 'int') in (SELECT	groupData.value('@ID','INT') AS id														
 												FROM  @doc.nodes('/XML/groupData/group') AS x2(groupData)
 												WHERE groupData.value('@termID', 'int')=@contadorp)
+
+--INSERT INTO Evaluaciones(id, Nombre, fecha, valorPorcentual, idRubro)  
+SELECT	evaluationData.value('@ID','INT') AS id,
+		evaluationData.value('@description', 'varchar(20)') AS Nombre,
+        evaluationData.value('@date', 'date') AS fecha,
+		evaluationData.value('@percentage', 'decimal(2,2)') AS valorPorcentual,
+		evaluationData.value('@groupItemID', 'int') AS idRubro
+
+FROM  @doc.nodes('/XML/evaluationData/evaluation') AS x1(evaluationData)
+WHERE evaluationData.value('@groupItemID', 'int') in (SELECT	groupItemData.value('@ID','INT') AS id														
+												FROM  @doc.nodes('/XML/groupItemData/groupItem') AS x2(groupItemData)
+												WHERE groupItemData.value('@termID', 'int')=@contadorp)
+
 							
---INSERT INTO PeriodoLectivo (id, fechaInicio, fechaFin, Nombre) 
+--INSERT INTO EstudiantesxGrupo(id, idGrupo, idEstudiante, nota, estado) 
 --Select EstudiantesxGrupo
 SELECT  studentGroupData.value('@ID','INT') AS id,
         studentGroupData.value('@groupID', 'varchar(20)') AS idGroup,
@@ -81,4 +102,3 @@ WHERE studentGroupData.value('@groupID', 'int') in (SELECT	groupData.value('@ID'
 												
 SET @contadorp=@contadorp+1;
 END
-
