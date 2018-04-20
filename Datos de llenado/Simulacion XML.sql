@@ -75,15 +75,21 @@ WHERE groupItemData.value('@groupID', 'int') in (SELECT	groupData.value('@ID','I
 
 --INSERT INTO Evaluaciones(id, Nombre, fecha, valorPorcentual, idRubro)  
 SELECT	evaluationData.value('@ID','INT') AS id,
-		evaluationData.value('@description', 'varchar(20)') AS Nombre,
+		evaluationData.value('@description', 'varchar(300)') AS Nombre,
         evaluationData.value('@date', 'date') AS fecha,
-		evaluationData.value('@percentage', 'decimal(2,2)') AS valorPorcentual,
+		evaluationData.value('@percentage', 'float') AS valorPorcentual,
 		evaluationData.value('@groupItemID', 'int') AS idRubro
-
 FROM  @doc.nodes('/XML/evaluationData/evaluation') AS x1(evaluationData)
-WHERE evaluationData.value('@groupItemID', 'int') in (SELECT	groupItemData.value('@ID','INT') AS id														
-												FROM  @doc.nodes('/XML/groupItemData/groupItem') AS x2(groupItemData)
-												WHERE groupItemData.value('@termID', 'int')=@contadorp)
+WHERE evaluationData.value('@groupItemID', 'int') in
+
+	(SELECT	groupItemData.value('@ID','INT') id														
+	FROM  @doc.nodes('/XML/groupItemData/groupItem') AS x2(groupItemData)
+	WHERE groupItemData.value('@groupID', 'int') in 
+
+		--Verifica que el Grupo esté en X periodo
+		(SELECT	groupData.value('@ID','INT') AS id														
+		FROM  @doc.nodes('/XML/groupData/group') AS x3(groupData)
+		WHERE groupData.value('@termID', 'int')=@contadorp))
 
 							
 --INSERT INTO EstudiantesxGrupo(id, idGrupo, idEstudiante, nota, estado) 
@@ -96,9 +102,6 @@ SELECT  studentGroupData.value('@ID','INT') AS id,
 FROM    @doc.nodes('/XML/studentGroupData/studentGroup') AS x1(studentGroupData)
 WHERE studentGroupData.value('@groupID', 'int') in (SELECT	groupData.value('@ID','INT') AS id														
 												FROM  @doc.nodes('/XML/groupData/group') AS x2(groupData)
-												WHERE groupData.value('@termID', 'int')=@contadorp)
-
-
-												
+												WHERE groupData.value('@termID', 'int')=@contadorp)										
 SET @contadorp=@contadorp+1;
 END
